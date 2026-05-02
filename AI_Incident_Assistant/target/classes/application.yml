@@ -1,0 +1,70 @@
+spring:
+  application:
+    name: ai-incident-assistant
+  profiles:
+    active: dev
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/aia?options=-c%20TimeZone=Asia/Ho_Chi_Minh}
+    username: ${DB_USERNAME:your-secret-key}
+    password: ${DB_PASSWORD:your-secret-key}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 5
+  sql:
+    init:
+      mode: never
+  flyway:
+    enabled: true
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+aia:
+  confidence-threshold: 0.70
+  uncertain-threshold: 0.40
+  similarity-threshold: 0.80
+  possible-duplicate-threshold: 0.60
+  mention-only-mode: false
+  gemini:
+    api-key: ${GEMINI_API_KEY:your-secret-key}
+    enabled: true
+    model: gemini-2.0-flash
+  telegram:
+    bot-secret-token: ${TELEGRAM_BOT_SECRET_TOKEN:your-secret-key}
+  jira:
+    base-url: ${JIRA_BASE_URL:https://jira.example.com}
+    project-key: ${JIRA_PROJECT_KEY:SUP}
+    api-version: ${JIRA_API_VERSION:3}
+    auth-method: ${JIRA_AUTH_METHOD:mock}
+    username: ${JIRA_USERNAME:}
+    api-token: ${JIRA_API_TOKEN:}
+    mock-enabled: ${JIRA_MOCK_ENABLED:true}
+    priority-mapping:
+      P1: Highest
+      P2: High
+      P3: Medium
+  sla-minutes:
+    P1: 30
+    P2: 120
+    P3: 480
+  working-hours:
+    timezone: Asia/Ho_Chi_Minh
+    start: "08:00"
+    end: "17:30"

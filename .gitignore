@@ -1,4 +1,6 @@
-### IDE ###
+############################################
+# IDE
+############################################
 # IntelliJ IDEA
 .idea/
 *.iws
@@ -13,7 +15,9 @@
 .classpath
 .settings/
 
-### Build ###
+############################################
+# Build
+############################################
 # Maven
 /target/
 
@@ -21,39 +25,69 @@
 /build/
 .gradle/
 
-### Logs ###
+############################################
+# Logs
+############################################
 *.log
 logs/
 
-### OS ###
-# Windows
+############################################
+# OS
+############################################
 Thumbs.db
-# Mac
 .DS_Store
 
-### Environment ###
+############################################
+# Environment
+############################################
 .env
 *.env
 
-### Application config (tuỳ chọn) ###
-# Nếu bạn không muốn push config chứa mật khẩu
-application.properties
-application.yml
+############################################
+# Spring Boot Config (QUAN TRỌNG)
+############################################
+# Không ignore toàn bộ config, chỉ ignore file chứa secret
 
-### Database ###
+application-local.yml
+application-local.properties
+application-dev.yml
+application-dev.properties
+
+# Nếu có file chứa secret riêng:
+secrets.yml
+
+############################################
+# Database
+############################################
 *.db
 *.sqlite
 
-### Generated files ###
+############################################
+# Generated files
+############################################
 *.class
 *.jar
 *.war
 *.ear
 
-### Temp ###
+############################################
+# Temp
+############################################
 tmp/
 temp/
 
-### Node (nếu có frontend trong project) ###
+############################################
+# Node (nếu có frontend)
+############################################
 node_modules/
 dist/
+
+############################################
+# Misc
+############################################
+*.pid
+*.seed
+*.out
+*.err.env
+*.env
+.env.*

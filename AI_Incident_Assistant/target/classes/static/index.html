@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Incident Copilot</title>
+    <style>
+        :root {
+            --ink: #111;
+            --muted: #666;
+            --line: #ddd;
+            --soft: #eee;
+            --card: #fff;
+            --bg: #f7f7f7;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--ink);
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            line-height: 1.5;
+        }
+
+        .shell {
+            width: min(1120px, calc(100% - 32px));
+            margin: 0 auto;
+            padding: 32px 0 56px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            padding: 28px;
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 4px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .mark {
+            width: 44px;
+            height: 44px;
+            border: 2px solid var(--ink);
+            display: grid;
+            place-items: center;
+            font-weight: 800;
+        }
+
+        h1, h2, h3, p {
+            margin: 0;
+        }
+
+        h1 {
+            font-size: clamp(28px, 5vw, 48px);
+            letter-spacing: -0.05em;
+        }
+
+        .subtitle {
+            color: var(--muted);
+            margin-top: 4px;
+        }
+
+        .grid {
+            display: grid;
+            gap: 16px;
+        }
+
+        .kpis {
+            grid-template-columns: repeat(4, 1fr);
+            margin: 18px 0;
+        }
+
+        .card, .section {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 4px;
+        }
+
+        .card {
+            padding: 18px;
+        }
+
+        .metric {
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -0.04em;
+        }
+
+        .label {
+            color: var(--muted);
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .section {
+            margin-top: 18px;
+            padding: 28px;
+        }
+
+        .section-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .step {
+            color: var(--muted);
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        textarea, input, button {
+            font: inherit;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 140px;
+            resize: vertical;
+            padding: 16px;
+            border: 1px solid var(--line);
+            border-radius: 4px;
+            color: var(--ink);
+            background: #fafafa;
+        }
+
+        textarea:focus {
+            outline: 2px solid var(--ink);
+            outline-offset: 2px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-top: 14px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            border: 1px solid var(--ink);
+            background: var(--ink);
+            color: #fff;
+            border-radius: 4px;
+            padding: 12px 18px;
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        button.secondary {
+            background: #fff;
+            color: var(--ink);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .error {
+            color: #111;
+            border-left: 4px solid #111;
+            padding-left: 12px;
+            margin-top: 12px;
+            display: none;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .loader-line {
+            height: 12px;
+            background: var(--soft);
+            overflow: hidden;
+            border-radius: 4px;
+        }
+
+        .loader-line::before {
+            content: "";
+            display: block;
+            width: 36%;
+            height: 100%;
+            background: var(--ink);
+            animation: scan 1s infinite ease-in-out;
+        }
+
+        @keyframes scan {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(300%); }
+        }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .kv {
+            border: 1px solid var(--line);
+            border-radius: 4px;
+            padding: 14px;
+            background: #fafafa;
+        }
+
+        .kv strong {
+            display: block;
+            font-size: 12px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 4px;
+        }
+
+        .message-box {
+            white-space: pre-wrap;
+            border: 1px solid var(--line);
+            background: #fafafa;
+            padding: 16px;
+            border-radius: 4px;
+            margin-top: 12px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid var(--line);
+            vertical-align: top;
+        }
+
+        th {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--muted);
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 44px;
+            border: 1px solid var(--ink);
+            border-radius: 999px;
+            padding: 2px 10px;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .list {
+            display: grid;
+            gap: 10px;
+        }
+
+        .person {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 12px;
+            border: 1px solid var(--line);
+            padding: 14px;
+            border-radius: 4px;
+            background: #fafafa;
+        }
+
+        a {
+            color: var(--ink);
+            font-weight: 700;
+        }
+
+        .empty {
+            color: var(--muted);
+            padding: 18px 0;
+        }
+
+        @media (max-width: 760px) {
+            .shell {
+                width: min(100% - 20px, 1120px);
+                padding-top: 10px;
+            }
+
+            header, .section {
+                padding: 18px;
+            }
+
+            .kpis, .result-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .section-head, header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            table {
+                display: block;
+                overflow-x: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="shell">
+    <header>
+        <div class="brand">
+            <div class="mark">AI</div>
+            <div>
+                <h1>AI Incident Copilot</h1>
+                <p class="subtitle">Chat → AI triage → Incident ticket → Dispatch suggestion</p>
+            </div>
+        </div>
+        <button class="secondary" type="button" onclick="refreshDashboard()">Refresh data</button>
+    </header>
+
+    <section class="grid kpis" aria-label="KPI dashboard">
+        <div class="card"><div class="metric" id="kpiTotal">–</div><div class="label">Total incidents</div></div>
+        <div class="card"><div class="metric" id="kpiOpen">–</div><div class="label">Open</div></div>
+        <div class="card"><div class="metric" id="kpiP1">–</div><div class="label">P1</div></div>
+        <div class="card"><div class="metric" id="kpiSla">–</div><div class="label">SLA alerts</div></div>
+    </section>
+
+    <section class="section" id="chatSection">
+        <div class="section-head">
+            <div>
+                <div class="step">Step 01 · Chat Intake</div>
+                <h2>Nhập tin nhắn bug như trong group khách hàng</h2>
+                <p class="subtitle">Dữ liệu sẽ được gửi tới <code>/api/webhooks/simulate</code> với platform <code>web_demo</code>.</p>
+            </div>
+        </div>
+        <textarea id="messageText" placeholder="Ví dụ: Anh ơi app bên em login không được, nhiều user bị từ sáng đến giờ @support_nguyen"></textarea>
+        <div class="actions">
+            <button id="submitBtn" type="button" onclick="submitIncident()">Gửi cho AI phân tích</button>
+            <button class="secondary" type="button" onclick="fillExample()">Dùng ví dụ P1</button>
+        </div>
+        <div class="error" id="errorBox"></div>
+    </section>
+
+    <section class="section hidden" id="loadingSection">
+        <div class="section-head">
+            <div>
+                <div class="step">Step 02 · AI Processing</div>
+                <h2>AI đang phân tích tin nhắn</h2>
+                <p class="subtitle">Đang phân loại bug/non-bug, severity, component và kiểm tra incident trùng.</p>
+            </div>
+        </div>
+        <div class="loader-line" aria-label="loading"></div>
+    </section>
+
+    <section class="section hidden" id="triageSection">
+        <div class="section-head">
+            <div>
+                <div class="step">Step 03 · Triage Result</div>
+                <h2>Kết quả AI triage</h2>
+                <p class="subtitle">Thông tin có cấu trúc trả về từ backend pipeline.</p>
+            </div>
+        </div>
+        <div class="result-grid" id="triageGrid"></div>
+        <div class="message-box" id="responseMessage"></div>
+    </section>
+
+    <section class="section hidden" id="ticketSection">
+        <div class="section-head">
+            <div>
+                <div class="step">Step 04 · Ticket Result</div>
+                <h2>Incident ticket</h2>
+                <p class="subtitle">Ticket được tạo mới hoặc gộp vào incident đang mở.</p>
+            </div>
+        </div>
+        <div class="result-grid" id="ticketGrid"></div>
+        <h3 style="margin-top:20px">Team dispatch suggestion</h3>
+        <div class="list" id="suggestionsList"><p class="empty">Chưa có ticket để gợi ý nhân sự.</p></div>
+    </section>
+
+    <section class="section">
+        <div class="section-head">
+            <div>
+                <div class="step">Live Board</div>
+                <h2>Incident board</h2>
+                <p class="subtitle">Dữ liệu lấy từ <code>/api/incidents</code>.</p>
+            </div>
+        </div>
+        <div id="incidentBoard"><p class="empty">Đang tải incidents...</p></div>
+    </section>
+</div>
+
+<script>
+    const ids = {
+        total: document.getElementById('kpiTotal'),
+        open: document.getElementById('kpiOpen'),
+        p1: document.getElementById('kpiP1'),
+        sla: document.getElementById('kpiSla'),
+        messageText: document.getElementById('messageText'),
+        submitBtn: document.getElementById('submitBtn'),
+        errorBox: document.getElementById('errorBox'),
+        loading: document.getElementById('loadingSection'),
+        triage: document.getElementById('triageSection'),
+        ticket: document.getElementById('ticketSection'),
+        triageGrid: document.getElementById('triageGrid'),
+        ticketGrid: document.getElementById('ticketGrid'),
+        responseMessage: document.getElementById('responseMessage'),
+        suggestionsList: document.getElementById('suggestionsList'),
+        incidentBoard: document.getElementById('incidentBoard')
+    };
+
+    function fillExample() {
+        ids.messageText.value = 'Anh ơi app bên em login không được, nhiều user bị từ sáng đến giờ @support_nguyen';
+        ids.messageText.focus();
+    }
+
+    function showError(message) {
+        ids.errorBox.textContent = message;
+        ids.errorBox.style.display = message ? 'block' : 'none';
+    }
+
+    async function requestJson(url, options) {
+        const response = await fetch(url, options);
+        if (!response.ok) {
+            const text = await response.text();
+            throw new Error(text || `HTTP ${response.status}`);
+        }
+        return response.json();
+    }
+
+    async function refreshDashboard() {
+        await loadIncidents();
+    }
+
+    function updateKpi(incidents) {
+        const arr = Array.isArray(incidents) ? incidents : [];
+        ids.total.textContent = arr.length;
+
+        const openCount = arr.filter(i => ['OPEN', 'IN_PROGRESS', 'TODO'].includes(i.status?.toUpperCase())).length;
+        ids.open.textContent = openCount;
+
+        const p1Count = arr.filter(i => i.severity === 'Highest' || i.severity === 'P1').length;
+        ids.p1.textContent = p1Count;
+
+        const slaCount = arr.filter(i => i.slaBreached === true).length;
+        ids.sla.textContent = slaCount;
+    }
+
+    async function loadIncidents() {
+        try {
+            const incidents = await requestJson('/api/incidents');
+            const arr = Array.isArray(incidents) ? incidents : [];
+            updateKpi(arr);
+            renderIncidents(arr);
+        } catch (error) {
+            ids.total.textContent = ids.open.textContent = ids.p1.textContent = ids.sla.textContent = '–';
+            ids.incidentBoard.innerHTML = `<p class="empty">Không tải được incident board: ${escapeHtml(error.message)}</p>`;
+        }
+    }
+
+    function renderIncidents(incidents) {
+        if (!incidents.length) {
+            ids.incidentBoard.innerHTML = '<p class="empty">Chưa có incident nào.</p>';
+            return;
+        }
+        const rows = incidents.map(incident => `
+            <tr>
+                <td><strong>${escapeHtml(incident.jiraIssueKey || '—')}</strong></td>
+                <td>${escapeHtml(incident.title || '—')}</td>
+                <td><span class="badge">${escapeHtml(incident.severity || '—')}</span></td>
+                <td>${escapeHtml(incident.status || '—')}</td>
+                <td>${escapeHtml(incident.slaStatus || (incident.slaBreached ? 'Overdue' : 'On track'))}</td>
+            </tr>
+        `).join('');
+        ids.incidentBoard.innerHTML = `
+            <table>
+                <thead><tr><th>Key</th><th>Title</th><th>Severity</th><th>Status</th><th>SLA</th></tr></thead>
+                <tbody>${rows}</tbody>
+            </table>
+        `;
+    }
+
+    async function submitIncident() {
+        const text = ids.messageText.value.trim();
+        if (!text) {
+            showError('Vui lòng nhập nội dung tin nhắn bug trước khi gửi.');
+            return;
+        }
+
+        showError('');
+        ids.submitBtn.disabled = true;
+        ids.loading.classList.remove('hidden');
+        ids.triage.classList.add('hidden');
+        ids.ticket.classList.add('hidden');
+        ids.loading.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+        const now = Date.now();
+        const payload = {
+            messageId: `web-${now}`,
+            platform: 'web_demo',
+            groupId: 'web-demo',
+            groupName: 'Web Demo',
+            senderId: 'demo-user',
+            senderName: 'Demo User',
+            text,
+            mentionedUserIds: []
+        };
+
+        try {
+            const result = await requestJson('/api/webhooks/simulate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            renderProcessResult(result);
+            await refreshDashboard();
+            if (result.jiraIssueKey) {
+                await loadSuggestions(result.jiraIssueKey);
+            } else {
+                ids.suggestionsList.innerHTML = '<p class="empty">Không có Jira key nên chưa thể gợi ý nhân sự.</p>';
+            }
+            ids.triage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } catch (error) {
+            showError(`Không xử lý được tin nhắn: ${error.message}`);
+        } finally {
+            ids.loading.classList.add('hidden');
+            ids.submitBtn.disabled = false;
+        }
+    }
+
+    function renderProcessResult(result) {
+        ids.triage.classList.remove('hidden');
+        ids.ticket.classList.remove('hidden');
+        ids.triageGrid.innerHTML = [
+            kv('Status', result.status),
+            kv('Incident ID', result.incidentId),
+            kv('Jira Key', result.jiraIssueKey),
+            kv('Duplicate', result.duplicate ? 'Yes' : 'No')
+        ].join('');
+        ids.responseMessage.textContent = result.message || 'Không có message trả về.';
+        ids.ticketGrid.innerHTML = [
+            kv('Ticket', result.jiraIssueKey || '—'),
+            kv('Incident', result.incidentId || '—'),
+            kv('Link', result.jiraIssueUrl ? `<a href="${escapeAttr(result.jiraIssueUrl)}" target="_blank" rel="noreferrer">Open ticket</a>` : '—'),
+            kv('State', result.status || '—')
+        ].join('');
+    }
+
+    async function loadSuggestions(issueKey) {
+        try {
+            const suggestions = await requestJson(`/api/commands/suggest/${encodeURIComponent(issueKey)}`);
+            if (!Array.isArray(suggestions) || !suggestions.length) {
+                ids.suggestionsList.innerHTML = '<p class="empty">Chưa có gợi ý nhân sự.</p>';
+                return;
+            }
+            ids.suggestionsList.innerHTML = suggestions.map(item => `
+                <div class="person">
+                    <div>
+                        <strong>${escapeHtml(item.displayName || item.username || 'Unknown')}</strong>
+                        <p class="subtitle">${escapeHtml(item.username || '')}</p>
+                        <p>${escapeHtml(item.reason || '')}</p>
+                    </div>
+                    <span class="badge">${escapeHtml(String(item.score ?? 0))}</span>
+                </div>
+            `).join('');
+        } catch (error) {
+            ids.suggestionsList.innerHTML = `<p class="empty">Không tải được gợi ý: ${escapeHtml(error.message)}</p>`;
+        }
+    }
+
+    function kv(label, value) {
+        return `<div class="kv"><strong>${escapeHtml(label)}</strong><span>${value == null || value === '' ? '—' : value}</span></div>`;
+    }
+
+    function escapeHtml(value) {
+        return String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    function escapeAttr(value) {
+        return escapeHtml(value).replace(/`/g, '&#096;');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        fillExample();
+        refreshDashboard();
+    });
+</script>
+</body>
+</html>
