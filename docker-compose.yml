@@ -26,8 +26,8 @@ services:
       db:
         condition: service_healthy
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/aia?options=-c%20TimeZone=Asia/Ho_Chi_Minh
-      SPRING_DATASOURCE_USERNAME: sa
-      SPRING_DATASOURCE_PASSWORD: 123456
+      DB_URL: jdbc:postgresql://db:5432/aia?options=-c%20TimeZone=Asia/Ho_Chi_Minh
+      DB_USERNAME: sa
+      DB_PASSWORD: 123456
     ports:
       - "8080:8080"

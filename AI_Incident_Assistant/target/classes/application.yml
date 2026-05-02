@@ -5,8 +5,8 @@ spring:
     active: dev
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/aia?options=-c%20TimeZone=Asia/Ho_Chi_Minh}
-    username: ${DB_USERNAME:your-secret-key}
-    password: ${DB_PASSWORD:your-secret-key}
+    username: ${DB_USERNAME:sa}
+    password: ${DB_PASSWORD:123456}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 5
@@ -43,11 +43,11 @@ aia:
   possible-duplicate-threshold: 0.60
   mention-only-mode: false
   gemini:
-    api-key: ${GEMINI_API_KEY:your-secret-key}
+    api-key: ${GEMINI_API_KEY:AIzaSyDK-34ZEICmX-zfNfZ4NyA_mg1feVKljY0}
     enabled: true
-    model: gemini-2.0-flash
+    model: gemini-3-flash-preview
   telegram:
-    bot-secret-token: ${TELEGRAM_BOT_SECRET_TOKEN:your-secret-key}
+    bot-secret-token: ${TELEGRAM_BOT_SECRET_TOKEN:8586011264:AAHo6fQBZbw-Q4hHZKzxQUlx-f0PmSQ-kxs}
   jira:
     base-url: ${JIRA_BASE_URL:https://jira.example.com}
     project-key: ${JIRA_PROJECT_KEY:SUP}

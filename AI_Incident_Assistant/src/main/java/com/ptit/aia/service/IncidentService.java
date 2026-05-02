@@ -78,6 +78,10 @@ public class IncidentService {
         JiraService.JiraIssue issue = jiraService.createIssue(incident);
         incident.setJiraIssueKey(issue.key());
         incident.setJiraIssueUrl(issue.url());
+        if (incidentRepository.existsByJiraIssueKey(issue.key())) {
+            Incident existing = incidentRepository.findByJiraIssueKey(issue.key()).orElseThrow();
+            return mergeDuplicate(existing, incoming, triage, receivedAt);
+        }
         incidentRepository.save(incident);
         saveSource(incident, incoming, receivedAt);
         return new ProcessResult("created", formatCreatedMessage(incident, triage), incident.getIncidentId(), incident.getJiraIssueKey(), incident.getJiraIssueUrl(), false);

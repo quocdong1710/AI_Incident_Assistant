@@ -91,3 +91,4 @@ dist/
 *.err.env
 *.env
 .env.*
+/team_members_9_nhan_vien_3_nhom.csv

@@ -28,6 +28,7 @@ public class Incident {
     private String environment;
     private String sourceLanguage;
     private String impactScope;
+    @Column(unique = true)
     private String jiraIssueKey;
     private String jiraIssueUrl;
     private Integer groupsReported = 1;

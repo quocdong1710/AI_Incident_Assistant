@@ -10,5 +10,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface IncidentRepository extends JpaRepository<Incident, Long> {
     Optional<Incident> findByIncidentId(String incidentId);
     Optional<Incident> findByJiraIssueKey(String jiraIssueKey);
+    boolean existsByJiraIssueKey(String jiraIssueKey);
     List<Incident> findByStatusIn(Collection<IncidentStatus> statuses);
 }
