@@ -215,13 +215,26 @@ export default function ChatPage() {
       if (!issueKey) return { content: '❌ Vui lòng cung cấp Issue Key. VD: /suggest SUP-101' };
 
       try {
+        // AUTOMATION: Fetch incident details first to get severity for tagging logic
+        let severity = undefined;
+        try {
+          const incRes = await fetch(`${API_URL}/incidents/${issueKey}`);
+          if (incRes.ok) {
+            const incData = await incRes.json();
+            severity = incData.severity;
+          }
+        } catch (e) {
+          console.error('Fetch incident for severity failed', e);
+        }
+
         const res = await fetch(`${API_URL}/commands/suggest/${issueKey}`);
         if (!res.ok) throw new Error('Failed to fetch suggestions');
         const suggestions: any[] = await res.json();
 
         return {
           content: `🔍 Team dispatch suggestions for **${issueKey}**:`,
-          suggestions
+          suggestions,
+          severity
         };
       } catch (err) {
         console.error('Fetch suggestions error:', err);
@@ -308,9 +321,16 @@ export default function ChatPage() {
           console.error('Auto-suggestion error:', sErr);
         }
 
+        let severity = result.severity;
+        if (!severity && result.message) {
+          const match = result.message.match(/Severity:\s*(P\d)/i);
+          if (match) severity = match[1];
+        }
+
         return {
           content: result.message,
-          suggestions
+          suggestions,
+          severity
         };
       }
 
@@ -366,10 +386,30 @@ export default function ChatPage() {
     if (botResponse) {
       let finalContent = botResponse.content;
 
-      // AUTOMATION: Tag all suggested staff members if suggestions exist
-      if (botResponse.suggestions && botResponse.suggestions.length > 0) {
-        const allTags = botResponse.suggestions.map(s => `@${s.username}`).join(' ');
-        finalContent = `🔔 ${allTags} vui lòng kiểm tra incident này.\n\n${finalContent}`;
+      // AUTOMATION: Tag suggested staff members based on severity rules
+      if (botResponse.suggestions && botResponse.suggestions.length > 0 && botResponse.severity) {
+        const severity = botResponse.severity.toUpperCase();
+        const sortedSuggestions = [...botResponse.suggestions].sort((a, b) => Number(a.score) - Number(b.score));
+        let selectedStaff: any[] = [];
+
+        if (severity === 'P3') {
+          // Tag 1 staff with lowest score
+          selectedStaff = [sortedSuggestions[0]];
+        } else if (severity === 'P2') {
+          // Tag 2 staffs with lowest score
+          selectedStaff = sortedSuggestions.slice(0, 2);
+        } else if (severity === 'P1') {
+          // Tag 2 staffs with highest score
+          const highestScores = [...botResponse.suggestions].sort((a, b) => Number(b.score) - Number(a.score));
+          selectedStaff = highestScores.slice(0, 2);
+        }
+
+        if (selectedStaff.length > 0) {
+          const allTags = selectedStaff.filter(s => s).map(s => `@${s.username}`).join(' ');
+          if (allTags) {
+            finalContent = `🔔 ${allTags} vui lòng kiểm tra incident này.\n\n${finalContent}`;
+          }
+        }
       }
 
       const botReply: ChatMessage = {
